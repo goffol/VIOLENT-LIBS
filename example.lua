@@ -1,56 +1,44 @@
--- 1. Load the library from your GitHub
-local ViolentLib = loadstring(game:HttpGet("https://github.com/goffol/VIOLENT-LIBS/raw/refs/heads/main/ViolentUiLib.lua"))()
+local url = "https://raw.githubusercontent.com/goffol/VIOLENT-LIBS/main/ViolentUiLib.lua"
+local success, result = pcall(function() return game:HttpGet(url) end)
+if not success then return warn("[ERROR] Failed to connect to GitHub!") end
+local loadFunc, loadErr = loadstring(result)
+if not loadFunc then return warn("[ERROR] Syntax Error: \n" .. tostring(loadErr)) end
+local ViolentLib = loadFunc()
 
--- 2. Create the main window
-local Window = ViolentLib:CreateWindow({
-Title = "VIOLENT"
-})
+---------------------------------------------------------
+-- [[ YOUR SCRIPT STARTS HERE ]]
+---------------------------------------------------------
+local TeleportService = game:GetService("TeleportService")
+local LocalPlayer = game:GetService("Players").LocalPlayer
 
--- 3. Gain access to the default "Main" menu (so you can add buttons there)
+local Window = ViolentLib:CreateWindow({ Title = "VIOLENT" })
+
+-- 1. Create the Menus to be used (Including default Setting access)
 local MainTab = Window:CreateMenu("Main")
-
--- 4. Create a new folder/menu (e.g.: ESP & Visuals)
 local VisualsTab = Window:CreateMenu("Visuals")
+local MiscTab = Window:CreateMenu("Misc")
+local SettingsTab = Window:CreateMenu("Settings") -- Calling this API will allow you to add items to the default Settings menu
 
--- 5. Link the Main Menu to the Visuals Menu
-MainTab:CreateMenuLink({ Name = "Visuals Settings", Target = "Visuals" })
+-- 2. Set Menu Position / Order on the Main Page ("Main")
+-- You can move the order of these CreateMenuLink calls to place Settings or Misc above/below Visuals
+MainTab:CreateMenuLink({ Name = "Visuals", Target = "Visuals" })
+MainTab:CreateMenuLink({ Name = "Misc", Target = "Misc" })
+MainTab:CreateMenuLink({ Name = "Settings", Target = "Settings" })
 
--- [[ NOW JUST FILL IN THE MENU! ]]
-
-VisualsTab:CreateHeader({ Name = "ESP SETTINGS" })
-
-VisualsTab:CreateToggle({ 
-Name = "Enable ESP", 
-Default = false, 
-Callback = function(Value) 
-print("ESP Status:", Value) 
--- Enter your ESP script here 
-end
+-- 3. Populate Visuals Menu
+VisualsTab:CreateToggle({
+    Name = "Enable ESP",
+    Default = false,
+    Callback = function(State)
+        print("ESP enabled:", State)
+    end
 })
 
-VisualsTab:CreateSlider({ 
-Name = "ESP Distance", 
-Min = 0, 
-Max = 1000, 
-Default = 500, 
-Step = 10, 
-Callback = function(Value) 
-print("Distance Set To:", Value) 
-end
-})
-
-VisualsTab:CreateSelector({ 
-Name = "Target Mode", 
-Options = {"Players", "NPCs", "All"}, 
-Default = 1, 
-Callback = function(Value) 
-print("Targeting:", Value) 
-end
-})
-
-VisualsTab:CreateButton({ 
-Name = "Print Info", 
-Callback = function() 
-print("Button Clicked via Enter!") 
-end
+-- 4. Populate Misc Menu (Includes Rejoin Server)
+MiscTab:CreateHeader({ Name = "MISC" })
+MiscTab:CreateButton({
+    Name = "Rejoin Server",
+    Callback = function()
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+    end
 })
