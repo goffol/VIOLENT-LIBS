@@ -1,5 +1,5 @@
--- [[ VIOLENT MENU API (LIBRARY VERSION) ]] --
--- V10: Converted to a Reusable UI Library (Rayfield Style)
+-- [[ VIOLENT MENU API (LIBRARY VERSION - FIXED) ]] --
+-- V11: Fixed Syntax Error & Improved API append logic
 -- Features: 100% Original Design, Auto-Layout, Camera Pan Fix, Built-in Settings.
 
 local ViolentLibrary = {}
@@ -316,7 +316,7 @@ function ViolentLibrary:CreateWindow(Config)
                 UpdateMenu()
             elseif currentItem.Type == "Color" then
                 currentItem.ColorIndex = currentItem.ColorIndex + 1
-                if currentItem.ColorIndex > #Window.ColorPalette end then currentItem.ColorIndex = 1 end
+                if currentItem.ColorIndex > #Window.ColorPalette then currentItem.ColorIndex = 1 end
                 if currentItem.Callback then currentItem.Callback(currentItem.ColorIndex) end
                 UpdateMenu()
             elseif currentItem.Type == "Toggle" then
@@ -331,9 +331,12 @@ function ViolentLibrary:CreateWindow(Config)
     local MenuAPI = {}
 
     function MenuAPI:CreateMenu(menuName)
-        Window.Menus[menuName] = {}
-        if menuName ~= "Main" then
-            table.insert(Window.Menus[menuName], { Type = "MenuLink", Name = "Back", Target = "Main", Value = "<" })
+        -- PERBAIKAN: Agar menu "Main" tidak kereset kalau kamu panggil CreateMenu("Main") dari luar
+        if not Window.Menus[menuName] then
+            Window.Menus[menuName] = {}
+            if menuName ~= "Main" then
+                table.insert(Window.Menus[menuName], { Type = "MenuLink", Name = "Back", Target = "Main", Value = "<" })
+            end
         end
 
         local TabAPI = {}
@@ -344,7 +347,6 @@ function ViolentLibrary:CreateWindow(Config)
         function TabAPI:CreateSlider(props) table.insert(Window.Menus[menuName], { Type = "Slider", Name = props.Name, Value = props.Default or 0, Min = props.Min or 0, Max = props.Max or 100, Step = props.Step or 1, Callback = props.Callback }); UpdateMenu() end
         function TabAPI:CreateSelector(props) table.insert(Window.Menus[menuName], { Type = "Selector", Name = props.Name, Options = props.Options, Index = props.Default or 1, Callback = props.Callback }); UpdateMenu() end
         
-        -- Custom Color internal logic (hanya buat settings bawaan)
         function TabAPI:CreateInternalColor(name, defaultIdx, callback) table.insert(Window.Menus[menuName], { Type = "Color", Name = name, ColorIndex = defaultIdx, Callback = callback }); UpdateMenu() end
         
         return TabAPI
@@ -361,7 +363,6 @@ function ViolentLibrary:CreateWindow(Config)
         if Window.State.ThemeIndex > (#Window.ColorPalette - 1) then Window.State.ThemeIndex = 1 end
         local c = Window.ColorPalette[Window.State.ThemeIndex]
         Window.Theme.Primary = c; Window.Theme.HeaderColor = c; Window.Theme.ScrollerColor = c
-        -- Update color boxes visually
         for _, v in ipairs(Window.Menus["Settings"]) do
             if v.Type == "Color" and (v.Name == "Primary" or v.Name == "Secondary" or v.Name == "Header Color" or v.Name == "Scroller Color") then
                 v.ColorIndex = Window.State.ThemeIndex
