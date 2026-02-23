@@ -1,5 +1,5 @@
--- [[ VIOLENT MENU API (LIBRARY VERSION - FIXED) ]] --
--- V11: Fixed Syntax Error & Improved API append logic
+-- [[ VIOLENT MENU API (LIBRARY VERSION - MODIFIED) ]] --
+-- V12: Removed Visual Back Button (Replaced with Backspace), Removed Hardcoded Main Links for custom positioning.
 -- Features: 100% Original Design, Auto-Layout, Camera Pan Fix, Built-in Settings.
 
 local ViolentLibrary = {}
@@ -259,6 +259,15 @@ function ViolentLibrary:CreateWindow(Config)
         end
 
         if not Window.State.Visible then return end
+        
+        -- SYSTEM BACKSPACE UNTUK KEMBALI KE MENU MAIN --
+        if input.KeyCode == Enum.KeyCode.Backspace then
+            if Window.CurrentMenuName ~= "Main" then
+                SwitchMenu("Main")
+            end
+            return
+        end
+
         local CurrentData = Window.Menus[Window.CurrentMenuName]
         if not CurrentData or #CurrentData == 0 then return end
 
@@ -331,12 +340,8 @@ function ViolentLibrary:CreateWindow(Config)
     local MenuAPI = {}
 
     function MenuAPI:CreateMenu(menuName)
-        -- PERBAIKAN: Agar menu "Main" tidak kereset kalau kamu panggil CreateMenu("Main") dari luar
         if not Window.Menus[menuName] then
             Window.Menus[menuName] = {}
-            if menuName ~= "Main" then
-                table.insert(Window.Menus[menuName], { Type = "MenuLink", Name = "Back", Target = "Main", Value = "<" })
-            end
         end
 
         local TabAPI = {}
@@ -352,11 +357,7 @@ function ViolentLibrary:CreateWindow(Config)
         return TabAPI
     end
 
-    -- [[ INITIALIZE DEFAULT MENUS (MAIN & SETTINGS) ]]
-    local MainTab = MenuAPI:CreateMenu("Main")
-    MainTab:CreateButton({ Name = "Rejoin Server", Callback = function() TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer) end })
-    MainTab:CreateMenuLink({ Name = "Settings", Target = "Settings" })
-
+    -- [[ INITIALIZE DEFAULT SETTINGS MENU (DOES NOT AUTO-LINK TO MAIN) ]]
     local SettingsTab = MenuAPI:CreateMenu("Settings")
     SettingsTab:CreateButton({ Name = "Premade Themes", Callback = function()
         Window.State.ThemeIndex = Window.State.ThemeIndex + 1
